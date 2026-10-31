@@ -23,7 +23,7 @@ Only the page and its bundled audio are published. The deployment uses static ho
 ## What's on the page
 
 - **A loop player.** A 16-beat diagram shows the chords, the held D♭ in the upper voice, and the bass line, with a playhead that moves in time.
-  - **Synth mode** plays the chord changes with simple generated voicings. The sus4, Gø7 walk-down, and muffle filter checkboxes are always available. Changing one while listening to the recording switches playback to the synth preview. If playback is paused, it stays paused until you press **Play synth loop**. Your synth choices are preserved when you return to the recording; its diagram follows the original chords.
+  - **Chord Preview** plays simple generated voicings. Select this mode explicitly to access the sus4, Gø7 walk-down, and muffle filter controls. Changes update the sounding voicing without restarting or jumping the loop. Sus4 affects beats 9–14; the first two chords are identical in both settings. Switching modes pauses playback, and each mode has its own play button. Your synth choices are preserved when you return to the recording; its diagram follows the original chords.
   - **Instrumental mode:** press **Play instrumental** to listen to the bundled 6:14 recording while the diagram follows the measured beat grid. Click a brightness bar to jump to that pass. Playback uses the browser's native audio player; no upload or browser storage setup is needed.
 - **The write-up:**
   - The loop structure
