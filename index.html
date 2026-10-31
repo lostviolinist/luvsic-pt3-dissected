@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="An interactive, beat-by-beat look at the piano loop in Nujabes' Luv(sic) Part 3 and why it sounds nostalgic.">
+<title>Luv(sic) Pt. 3 Dissected</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column; the loop player sits up top as the page's thesis, findings follow as a long read. */
+:root{
+  --bg:#EDF0F4; --panel:#F8FAFC; --cell:#E6EAF0; --fg:#141821; --muted:#596173; --line:#CBD2DC;
+  --tension:#5B4BC4; --tension-bg:#E5E1FB; --tension-ink:#2C2380;
+  --home:#B5700E; --home-bg:#FBE9C6; --home-ink:#5A3703;
+  --now:#CF4D27; --now-bg:#FADFD5; --bar:#8791A3;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10131A; --panel:#171B24; --cell:#20252F; --fg:#E6E9EF; --muted:#9BA3B3; --line:#2D3441;
+  --tension:#9E93F2; --tension-bg:#29244F; --tension-ink:#DCD7FF;
+  --home:#EAAA3C; --home-bg:#3A2809; --home-ink:#FCE4B6;
+  --now:#F27D58; --now-bg:#42221A; --bar:#6A7487; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10131A; --panel:#171B24; --cell:#20252F; --fg:#E6E9EF; --muted:#9BA3B3; --line:#2D3441;
+  --tension:#9E93F2; --tension-bg:#29244F; --tension-ink:#DCD7FF;
+  --home:#EAAA3C; --home-bg:#3A2809; --home-ink:#FCE4B6;
+  --now:#F27D58; --now-bg:#42221A; --bar:#6A7487; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--serif);font-size:18px;line-height:1.65;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 64px}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:56px}
+header{display:flex;flex-direction:column;gap:14px}
+.kicker{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--display);font-weight:650;font-size:clamp(2.1rem,6vw,3.5rem);line-height:1.02;letter-spacing:-.02em;margin:0;text-wrap:balance}
+h1 em{font-style:normal;color:var(--tension)}
+.dek{font-size:1.2rem;color:var(--muted);margin:0;max-width:60ch}
+h2{font-family:var(--display);font-weight:600;font-size:1.65rem;line-height:1.15;letter-spacing:-.01em;margin:0;text-wrap:balance}
+h3{font-family:var(--display);font-weight:600;font-size:1.1rem;margin:0}
+section{display:flex;flex-direction:column;gap:16px}
+section p{margin:0;max-width:66ch}
+a{color:var(--tension);text-underline-offset:3px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px 20px 18px;display:flex;flex-direction:column;gap:14px}
+.panel-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px 16px}
+.panel-head h2{font-size:1.25rem}
+.hint{font-family:var(--display);font-size:14px;color:var(--muted);margin:0;line-height:1.5}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.dia{display:block;width:100%;min-width:620px;height:auto}
+.dia text{font-family:var(--display);font-size:12px;fill:var(--muted)}
+.dia .chd{fill:var(--fg);font-size:13px;font-weight:500}
+.dia .rule{stroke:var(--line);stroke-width:1}
+.box-min{fill:var(--cell);stroke:var(--line);stroke-width:1}
+.box-ten{fill:var(--tension-bg);stroke:var(--tension);stroke-width:1}
+.box-home{fill:var(--home-bg);stroke:var(--home);stroke-width:1}
+.box-ten.on{stroke-width:2.2}.box-home.on{stroke-width:2.6}
+.dia .t-ten{fill:var(--tension-ink);font-size:14px;font-weight:600}
+.dia .t-home{fill:var(--home-ink);font-size:14px;font-weight:600}
+.cell rect{fill:var(--cell);stroke:var(--line);stroke-width:1}
+.dia .cell text{fill:var(--fg)}
+.cell.now rect{fill:var(--now-bg);stroke:var(--now);stroke-width:1.6}
+.dia .num.cur{fill:var(--fg);font-weight:700}
+.ph{stroke:var(--now)}
+#up{transition:opacity .4s}
+.ctl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;font-family:var(--display);font-size:15px;color:var(--muted)}
+.ctl label{display:flex;align-items:center;gap:7px;cursor:pointer}
+.ctl input[type=checkbox]{accent-color:var(--tension);width:16px;height:16px}
+button,.fbtn{font-family:var(--display);font-size:15px;font-weight:500;color:var(--fg);background:transparent;border:1px solid var(--line);border-radius:10px;padding:8px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;line-height:1.2}
+button.primary{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:hover:not(:disabled),.fbtn:hover{border-color:var(--muted)}
+button:focus-visible,.fbtn:focus-within,input:focus-visible{outline:2px solid var(--tension);outline-offset:2px}
+.fbtn input{position:absolute;width:1px;height:1px;opacity:0}
+.fbtn{position:relative}
+[hidden]{display:none!important}
+.cap{font-family:var(--display);font-size:16px;line-height:1.5;margin:0;min-height:48px;color:var(--fg)}
+.strip-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;font-family:var(--display);font-size:13px;color:var(--muted)}
+#tl{display:block;width:100%;height:auto}
+#tl rect{cursor:pointer}
+.off{font-size:13px}
+.off input{flex:1;min-width:120px;accent-color:var(--now)}
+.listen{font-family:var(--display);font-size:14px;color:var(--muted);margin:0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.stats div{background:var(--panel);padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.stats b{font-family:var(--mono);font-weight:500;font-size:1.25rem;font-variant-numeric:tabular-nums}
+.stats span{font-family:var(--display);font-size:13px;color:var(--muted);line-height:1.35}
+aside.note{border-left:3px solid var(--tension);padding:4px 0 4px 18px;display:flex;flex-direction:column;gap:8px;max-width:66ch}
+aside.note p{font-size:16px}
+.specs{margin:0;display:grid;grid-template-columns:minmax(0,9rem) minmax(0,1fr);gap:14px 20px;max-width:66ch}
+.specs dt{font-family:var(--mono);font-size:14px;color:var(--muted);padding-top:3px}
+.specs dd{margin:0;font-size:16.5px}
+.specs dd b{font-family:var(--mono);font-weight:500;font-size:15px}
+.mono{font-family:var(--mono);font-size:.88em}
+.chart{display:block;width:100%;min-width:560px;height:auto}
+.chart text{font-family:var(--display);font-size:12px;fill:var(--muted)}
+.method{font-size:16px;color:var(--muted)}
+.sources{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:6px;font-size:16px}
+footer{font-family:var(--display);font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+@media (max-width:520px){body{font-size:17px}.specs{grid-template-columns:minmax(0,1fr)}.specs dt{padding-top:0}}
+@media (prefers-reduced-motion:reduce){#up{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="kicker">Nujabes · Luv(sic) Part 3, instrumental · Luv(sic) Hexalogy</div>
+  <h1>Why this loop sounds like <em>a memory</em></h1>
+  <p class="dek">A beat-by-beat look at one ten-second piano loop: what it does, measured from the audio, and why those choices read as nostalgia.</p>
+</header>
+
+<div class="panel" aria-label="Loop player">
+  <div class="panel-head">
+    <h2>The loop, beat by beat</h2>
+    <p class="hint">Press play, then switch chords off to hear what each one adds.</p>
+  </div>
+  <div class="scroll">
+  <svg class="dia" id="dia" viewBox="0 0 680 172" role="img" aria-labelledby="diaT diaD"><title id="diaT">The 16-beat loop</title><desc id="diaD">Chords Fm9, B-flat minor 9, E-flat 7 sus4, A-flat major 7 sus4 and G half-diminished 7. A D-flat is held on top from beat 5 to beat 14 and resolves to C on beat 15. The bass falls F, B-flat, E-flat, A-flat, then steps to G.</desc>
+    <text x="40" y="46">Chord</text>
+    <text class="chd" x="193" y="46" text-anchor="middle">Fm9</text>
+    <text class="chd" x="321" y="46" text-anchor="middle">B♭m9</text>
+    <text class="chd" id="l3" x="449" y="46" text-anchor="middle">E♭7sus4</text>
+    <text class="chd" id="l4" x="561" y="46" text-anchor="middle">A♭maj7sus4</text>
+    <text class="chd" id="l5" x="625" y="46" text-anchor="middle">Gø7</text>
+    <line class="rule" x1="130" y1="58" x2="256" y2="58"/><line class="rule" x1="258" y1="58" x2="384" y2="58"/>
+    <line class="rule" x1="386" y1="58" x2="512" y2="58"/><line class="rule" id="k4" x1="514" y1="58" x2="608" y2="58"/>
+    <line class="rule" id="k5" x1="610" y1="58" x2="640" y2="58"/>
+    <text x="40" y="85" dominant-baseline="central">Upper voice</text>
+    <g id="up">
+      <rect class="box-min" x="130" y="70" width="126" height="30" rx="5"/>
+      <text x="193" y="85" text-anchor="middle" dominant-baseline="central">F minor</text>
+      <rect class="box-ten" id="pur" x="258" y="70" width="318" height="30" rx="5"/>
+      <text class="t-ten" id="put" x="417" y="85" text-anchor="middle" dominant-baseline="central">D♭ held across three chords</text>
+      <rect class="box-home" id="amr" x="578" y="70" width="30" height="30" rx="5"/>
+      <text class="t-home" id="amt" x="593" y="85" text-anchor="middle" dominant-baseline="central">C</text>
+    </g>
+    <text x="40" y="127" dominant-baseline="central">Bass</text>
+    <g id="bass"></g>
+    <text x="40" y="158" dominant-baseline="central">Beat</text>
+    <g id="nums"></g>
+    <line class="ph" id="ph" x1="130" y1="64" x2="130" y2="146" stroke-width="2.2" stroke-linecap="round" opacity="0"/>
+  </svg>
+  </div>
+  <div class="ctl">
+    <button class="primary" id="bs" type="button">▶ Play synth loop</button>
+    <label class="fbtn" for="fi">Load your copy of the track<input type="file" id="fi" accept="audio/*,.webm,.mp3,.m4a,.wav,.ogg"></label>
+    <button id="bt" type="button" disabled>▶ Play your track</button>
+    <button id="forget" type="button" hidden>Remove saved file</button>
+  </div>
+  <div class="ctl">
+    <label><input type="checkbox" id="tSus" checked> Sus4 chords</label>
+    <label><input type="checkbox" id="tGo" checked> Gø7 walk-down</label>
+    <label><input type="checkbox" id="tMuf"> Muffle filter</label>
+    <span id="tnote" style="font-size:13px"></span>
+  </div>
+  <p class="cap" id="cap" aria-live="polite">The synth plays the chord changes with simple voicings. Load the original to watch the diagram follow the recording.</p>
+  <div class="strip-head"><span>Piano brightness, pass by pass (taller is clearer)</span><span id="st">Track not loaded</span></div>
+  <svg id="tl" viewBox="0 0 680 64" role="img" aria-label="Piano brightness for each of 37 passes. Click a bar to jump there once your track is loaded."></svg>
+  <div class="ctl off"><label for="off">Sync offset</label><input type="range" id="off" min="-250" max="250" step="10" value="0"><span id="offv" style="min-width:52px;text-align:right" class="mono">0 ms</span></div>
+  <p class="listen">Hear the original: <a href="https://www.youtube.com/watch?v=NhG4cQATy6c" target="_blank" rel="noopener">Luv(sic) Pt. 3 instrumental on YouTube</a>. If you own the track, load it above and the diagram follows the recording. The file stays in your browser, and each device remembers it after the first load.</p>
+</div>
+
+<section>
+  <h2>The short version</h2>
+  <p>The loop spends about six seconds reaching for a resolution, gets it for a little over half a second, then slides back into minor. It repeats 37 times with almost no change. A filter keeps muffling and clearing it, and the piano itself sounds like an old record: slightly flat, dark and narrow. Each of those choices points at something you can almost get back to.</p>
+</section>
+
+<section>
+  <h2>One phrase, on repeat</h2>
+  <p>The whole instrumental is built on a single four-bar phrase. Each pass lasts 10.1 seconds, and every pass is at least 91% similar to the average one. Across six minutes the loudness moves by only 2.6 dB, so nothing builds and there is no climax.</p>
+  <div class="stats">
+    <div><b>95.0</b><span>beats per minute, steady</span></div>
+    <div><b>16</b><span>beats in the loop</span></div>
+    <div><b>37</b><span>passes in 6:14</span></div>
+    <div><b>2.6 dB</b><span>loudness range, start to finish</span></div>
+  </div>
+  <p>It doesn't end on a final chord either. It fades out over the last thirty seconds. In a study in <i>Psychology of Music</i>, listeners tapped along to a pop song that either faded out or stopped. With the fade, many kept tapping after the music was gone. A fade suggests the song is still playing somewhere you can't hear it.</p>
+</section>
+
+<section>
+  <h2>Six seconds of leaning, one beat of landing</h2>
+  <p>In the middle of the loop a D♭ sits on top for ten beats while the bass falls by fifths underneath it: F, B♭, E♭, A♭. The same note means something different over each chord. It is the minor 3rd of B♭m9, the 7th of E♭7sus4, then the suspended 4th of A♭maj7sus4. Over the home chord it sits one step above where it wants to be, on C.</p>
+  <p>On beat 15 it finally drops to C. That is the home chord with its major 3rd, the warm resolution, and it lasts one beat, about 0.6 seconds. Then the bass steps down to G and the loop falls back into F minor.</p>
+  <p>A note that leans on its neighbour and then resolves down by step is called an appoggiatura. The music psychologist John Sloboda found it is one of the devices most reliably linked to tears and chills. This loop does it every ten seconds. The E♭ bar does a smaller version, letting its 3rd through briefly on beat 11.</p>
+  <p>Try it in the player. With the sus4 chords off, C arrives two beats early and stays, so you land as soon as you get home and most of the ache goes. With the Gø7 off, the bass stays on A♭ and nothing pulls the loop back to minor.</p>
+  <aside class="note">
+    <h3>About that Gø7</h3>
+    <p>The chord on beat 16 is a half-diminished seventh. It is the same chord type as Wagner's Tristan chord, which opens <i>Tristan und Isolde</i> (1859) and became the standard musical symbol of unresolved longing. Jazz uses it all the time as the step into a minor chord: <i>Stella by Starlight</i> opens on one, and <i>Autumn Leaves</i> and <i>Blue Bossa</i> lean on it too. Here it is what pulls the loop back to minor on every pass.</p>
+  </aside>
+</section>
+
+<section>
+  <h2>Sad chords with happy chords inside</h2>
+  <p>Read in A♭ major, the progression is vi–ii–V–I, the backbone of mid-century jazz standards. You have heard this motion your whole life in old films, lounges and background music, which is part of why it feels familiar the first time.</p>
+  <p>The minor chords also hide major ones. Fm7 is F–A♭–C–E♭: take away the F and A♭–C–E♭ is an A♭ major chord. B♭m7 holds a D♭ major chord the same way. F minor and A♭ major share all seven notes, so the key itself sits between sad and warm. Published transcriptions disagree about which one the song is in, and the audio splits the difference: the loop spends most of its time on F minor while every chord points toward A♭.</p>
+</section>
+
+<section>
+  <h2>In and out of focus</h2>
+  <p>Most of the arrangement comes from running the same loop through a filter that opens and closes. In 16 of the 34 passes before the fade, the piano's upper range drops by about 18 dB (half-muffled) or 27 dB (only the low end gets through). The song opens fully muffled and keeps going back to it. From about 4:33 to 5:13 the low end drops out instead.</p>
+  <div class="scroll"><svg class="chart" id="chart" viewBox="0 0 680 236" role="img" aria-label="Bar chart of how far the piano's 1.5 to 4 kilohertz band drops below the open sections, for each 10-second pass. Muffled passes drop 18 to 27 decibels; the last three passes fade out."></svg></div>
+  <p>Hearing the same phrase sharpen and blur again is close to how a memory comes back. That reading is interpretation. The filter moves themselves are measured.</p>
+</section>
+
+<section>
+  <h2>It sounds like an old record</h2>
+  <dl class="specs">
+    <dt>Tuning</dt><dd><b>−17 cents</b>, steady through the track: about a sixth of a semitone flat. That is the fingerprint of a vinyl sample played at a slightly different speed, and it puts the music between the keys of a modern piano.</dd>
+    <dt>Brightness</dt><dd><b>95% below 2.2 kHz</b> for the piano layer, lower than the top of an old telephone line (3.4 kHz). The file carries content up to 20 kHz and the hi-hats are crisp, so the darkness belongs to the sample, not the compression.</dd>
+    <dt>Tilt</dt><dd><b>−3.3 dB per octave</b> steeper than pink noise, a common neutral reference for a balanced mix.</dd>
+    <dt>Width</dt><dd><b>89% correlated</b> left and right. Close to mono, the way older recordings are.</dd>
+  </dl>
+  <p>Put together, you hear an old-sounding loop under present-day drums.</p>
+</section>
+
+<section>
+  <h2>A rocking swing</h2>
+  <p>The eighth notes are straight, but the sixteenths between them land about 60 ms late, at roughly 69% of the way through each eighth. That is a little heavier than triplet swing (67%). It gives the beat a lilt that feels relaxed and never urgent.</p>
+</section>
+
+<section>
+  <h2>Where the loop comes from</h2>
+  <p>The piano comes from Nana Caymmi's recording of Ivan Lins' <i>Tens (Calmaria)</i>. That is Brazilian MPB, a tradition built around <i>saudade</i>, a Portuguese word for an aching longing for something absent. Nujabes cut a few seconds of it and replays them over and over, away from the song they came from, the way a memory replays a moment.</p>
+  <p>Part 3 first came out in 2005 on Nujabes' album <i>Modal Soul</i>, with Shing02 rapping about the power of music. Nujabes died in 2010, before the series was finished. Shing02 completed it, and the six parts were collected as <i>Luv(sic) Hexalogy</i> in 2015. Many listeners first found Nujabes through <i>Samurai Champloo</i> or the lofi hip-hop streams that grew out of his sound, which ties the track to a particular stretch of their own lives.</p>
+</section>
+
+<section>
+  <h3>How this was measured</h3>
+  <p class="method">The 6:14 instrumental was analysed with the Python audio library librosa. A beat grid was fitted to the drum hits, the loop was averaged across all its passes, pitch content was split into bass and upper registers, and frequency bands were tracked pass by pass. Chord and pitch readings from mixed audio are estimates. These matched the published transcriptions.</p>
+  <h3>Sources</h3>
+  <ol class="sources">
+    <li><a href="https://en.wikipedia.org/wiki/Luv(Sic)_Hexalogy" target="_blank" rel="noopener">Luv(sic) Hexalogy, Wikipedia</a></li>
+    <li><a href="https://www.hooktheory.com/theorytab/view/nujabes/luv-sic-pt-3" target="_blank" rel="noopener">Luv sic pt 3 chord analysis, Hooktheory</a></li>
+    <li><a href="https://www.npr.org/2012/02/13/146818461/the-ballad-of-the-tearful-why-some-songs-make-you-cry" target="_blank" rel="noopener">The ballad of the tearful: why some songs make you cry, NPR</a></li>
+    <li><a href="https://metatoc.com/papers/27043-when-the-pulse-of-the-song-goes-on-fade-out-in-popular-music-and-the-pulse-continuity-phenomenon" target="_blank" rel="noopener">When the pulse of the song goes on: fade-out in popular music, Psychology of Music</a></li>
+    <li><a href="https://kexp.org/read/2018/3/7/your-beat-plus-my-melody-shing02-honors-legendary-producer-and-friend-nujabes-tribute-performances" target="_blank" rel="noopener">Your beat plus my melody: Shing02 honors Nujabes, KEXP</a></li>
+  </ol>
+</section>
+
+<footer>An independent listening analysis made with Claude. Not affiliated with Nujabes, Shing02 or Hydeout Productions. No audio is hosted on this page.</footer>
+</div>
+
+<script>
+const T0=0.1461,IBI=0.6315801,LOOP=16*IBI,DUR=374.2;
+const LD=[[-26.4,1.1,-0.3],[-17.7,1.7,1],[-17.8,1.6,1],[0,0,0],[0.1,-0.4,-0.2],[-17.8,1.7,1],[-17.7,1.7,1],[-17.6,1.7,1],[-17.7,1.7,1],[0,-0.4,-0.1],[0,-0.8,-0.2],[0.2,-0.5,-0.2],[0.1,-0.2,-0.1],[0,-0.1,0],[-18,1.7,1],[-18,1.6,0.9],[-26.7,1.1,-0.2],[-18,1.8,1],[0,0,0],[0,0,0],[0.1,0,-0.1],[-26.6,1.2,-0.2],[-26.7,1.3,-0.1],[-17.8,1.7,1],[-17.9,1.6,0.9],[-17.8,1.7,1],[0,-0.1,0],[0.3,-4.7,-0.9],[0.3,-4.8,-1],[0.4,-4.6,-0.9],[0.3,-4.6,-0.9],[0,-0.2,0],[0,0,0],[0,0,0],[-2.6,-3.2,-2.6],[-12,-12.9,-11.8],[-30.4,-30.6,-29.2]];
+const $=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg';
+let sus=true,go=true,muf=false,mode=null,playing=false,ctx=null,lp=null,master=null;
+let buf=null,src=null,tStart=0,tPos=0,sStart=0,nextB=0,bN=0,timer=null,curLead=null,off=0,lastI=-1,lastL=-1;
+function el(tag,attrs,txt){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(txt!=null)e.textContent=txt;return e}
+const fmt=t=>Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0');
+
+/* diagram cells */
+const BN=['F','F','F','F','B♭','B♭','B♭','B♭','E♭','E♭','E♭','E♭','A♭','A♭','A♭','G'];
+const cells=[],nums=[];
+for(let i=0;i<16;i++){const x=130+32*i,g=el('g',{class:'cell'});g.appendChild(el('rect',{x,y:112,width:30,height:30,rx:5}));g.appendChild(el('text',{x:x+15,y:127,'text-anchor':'middle','dominant-baseline':'central'},BN[i]));$('bass').appendChild(g);cells.push(g);const n=el('text',{class:'num',x:x+15,y:158,'text-anchor':'middle','dominant-baseline':'central'},String(i+1));$('nums').appendChild(n);nums.push(n)}
+
+/* player strip */
+const bars=[];
+LD.forEach((d,k)=>{const v=Math.min(d[0],d[2]);const h=6+30*Math.max(0,Math.min(1,(v+27)/27));const r=el('rect',{x:40+k*16.2,y:44-h,width:13,height:h,rx:2,style:'fill:var(--bar);opacity:.6'});r.addEventListener('click',()=>seekLoop(k));$('tl').appendChild(r);bars.push(r)});
+$('tl').appendChild(el('text',{x:40,y:60,style:'font-family:var(--display);font-size:12px;fill:var(--muted)'},'0:00'));
+$('tl').appendChild(el('text',{x:640,y:60,'text-anchor':'end',style:'font-family:var(--display);font-size:12px;fill:var(--muted)'},'6:14'));
+
+/* section chart */
+(function(){const c=$('chart'),X0=64,W=600,Y0=28,H=170,step=W/37,y=v=>Y0+(-v/30)*H;
+  [0,-10,-20,-30].forEach(v=>{c.appendChild(el('line',{x1:X0,x2:X0+W,y1:y(v),y2:y(v),style:'stroke:var(--line);stroke-width:1'}));c.appendChild(el('text',{x:X0-8,y:y(v)+4,'text-anchor':'end'},v===0?'0 dB':v))});
+  c.appendChild(el('text',{x:X0,y:14},'How far the piano’s upper range drops below the open sections'));
+  LD.forEach((d,k)=>{const v=Math.max(-30,Math.min(0,k>=34?Math.min(d[0],d[2]):d[0]));const hh=y(v)-Y0;if(hh>0.5)c.appendChild(el('rect',{x:X0+k*step+2,y:Y0,width:step-4,height:hh,rx:2,style:'fill:var('+(k>=34?'--bar':'--tension')+');opacity:'+(k>=34?.55:.85)}))});
+  for(let m=0;m<=6;m++){const x=X0+((m*60-T0)/LOOP)*step;if(x<X0-1)continue;c.appendChild(el('text',{x:Math.max(x,X0),y:Y0+H+20,'text-anchor':m===0?'start':'middle'},m+':00'))}
+  const bx=X0+27*step+2,ex=X0+31*step-2;c.appendChild(el('line',{x1:bx,x2:ex,y1:Y0+12,y2:Y0+12,style:'stroke:var(--now);stroke-width:2'}));c.appendChild(el('text',{x:(bx+ex)/2,y:Y0+30,'text-anchor':'middle',style:'fill:var(--now);font-family:var(--display);font-size:12px'},'bass out'));
+  c.appendChild(el('text',{x:X0+35.5*step,y:Y0+H-6,'text-anchor':'middle'},'fade'));
+})();
+
+function layout(){
+  $('l3').textContent=sus?'E♭7sus4':'E♭7';$('l4').textContent=sus?'A♭maj7sus4':'A♭maj7';
+  $('l4').setAttribute('x',go?561:577);$('k4').setAttribute('x2',go?608:640);
+  $('l5').textContent=go?'Gø7':'';$('k5').setAttribute('opacity',go?1:0);
+  const pEnd=sus?576:512;$('pur').setAttribute('width',pEnd-258);$('put').setAttribute('x',(258+pEnd)/2);
+  $('put').textContent=sus?'D♭ held across three chords':'D♭ held across two chords';
+  const aX=sus?578:514,aEnd=go?608:640;$('amr').setAttribute('x',aX);$('amr').setAttribute('width',aEnd-aX);
+  $('amt').setAttribute('x',(aX+aEnd)/2);$('amt').textContent=(aEnd-aX)>90?'C right away':'C';
+  cells.forEach((g,i)=>g.querySelector('text').textContent=(i===15&&!go)?'A♭':BN[i]);
+}
+layout();
+function caption(i){
+  if(i<4)return'Fm9: the loop starts in minor. A♭, the minor 3rd, sets the mood.';
+  if(i<8)return'B♭m9: D♭ moves to the top and starts leaning toward C.';
+  if(i<12)return sus?'E♭7sus4: D♭ is still on top. The sus4 holds back E♭’s 3rd.':'E♭7: D♭ is still on top, but E♭’s 3rd (G) is already there.';
+  if(i<14)return sus?'A♭maj7sus4: the home chord, but D♭ is still on top. No 3rd yet.':'A♭maj7: home, with C on top. It lands right away.';
+  if(i===14)return sus?'D♭ falls to C: home, finally. For one beat.':'Still home. The arrival happened two beats ago.';
+  return go?'Bass steps down to G (Gø7) and pulls you back toward F minor.':'Stays on A♭. Nothing pulls you back; the loop just restarts.';
+}
+function stateOf(k){const d=LD[Math.max(0,Math.min(36,k))];if(k>=34)return['fading out',Math.max(.15,1+d[2]/30)];if(d[0]<-22)return['muffled, only the low end gets through',.35];if(d[0]<-8)return['half-muffled',.6];if(d[1]<-3)return['open, low end dropped out',1];return['open',1]}
+
+/* audio */
+function ensureCtx(){if(!ctx){ctx=new(window.AudioContext||window.webkitAudioContext)();lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2400;lp.Q.value=0.7;master=ctx.createGain();master.gain.value=0.55;lp.connect(master);master.connect(ctx.destination)}if(ctx.state==='suspended')ctx.resume()}
+function aud(){const c=ctx.currentTime;try{if(ctx.getOutputTimestamp){const o=ctx.getOutputTimestamp();if(o.contextTime>0&&o.performanceTime>0){const a=o.contextTime+(performance.now()-o.performanceTime)/1000;if(a<=c+0.01&&a>c-0.5)return a}}}catch(e){}return c-(ctx.outputLatency||0)}
+const m2f=m=>440*Math.pow(2,(m-69)/12);
+function tone(m,t,dur,g,sustain){const e=ctx.createGain(),o=ctx.createOscillator(),o2=ctx.createOscillator(),g2=ctx.createGain();o.type='sine';o2.type='triangle';o.frequency.value=o2.frequency.value=m2f(m);g2.gain.value=0.3;o.connect(e);o2.connect(g2);g2.connect(e);e.connect(lp);e.gain.setValueAtTime(0.0001,t);e.gain.exponentialRampToValueAtTime(g,t+0.015);if(sustain){e.gain.linearRampToValueAtTime(g*0.55,t+dur-0.12);e.gain.exponentialRampToValueAtTime(0.0001,t+dur+0.25)}else e.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.start(t);o2.start(t);o.stop(t+dur+0.4);o2.stop(t+dur+0.4);return e}
+function voice(i){if(i<4)return{b:41,p:[51,55,60],l:68,s:i===0};if(i<8)return{b:46,p:[56,60,65],l:73,s:i===4};if(i<12)return{b:39,p:sus?[56,58,65]:[55,58,65],l:73,s:i===8};if(i===15&&go)return{b:43,p:[61,65],l:70,s:true};return{b:44,p:[58,63,67],l:(sus&&i<14)?73:72,s:i===12}}
+function playBeat(i,t){const v=voice(i),pv=voice((i+15)%16);
+  if(v.s){tone(v.b,t,2.6,0.3);v.p.forEach(m=>tone(m,t,2.2,0.08))}else v.p.forEach(m=>tone(m,t,0.6,0.035));
+  if(v.l!==pv.l||i===0){let k=1;while(k<16&&voice((i+k)%16).l===v.l)k++;if(curLead){curLead.gain.cancelScheduledValues(t);curLead.gain.setTargetAtTime(0.0001,t,0.03)}curLead=tone(v.l,t,k*IBI,0.15,true)}}
+function sched(){while(nextB<ctx.currentTime+0.12){playBeat(bN%16,nextB);nextB+=IBI;bN++}}
+function stopSynth(){if(timer){clearInterval(timer);timer=null}if(curLead&&ctx){curLead.gain.cancelScheduledValues(ctx.currentTime);curLead.gain.setTargetAtTime(0.0001,ctx.currentTime,0.05);curLead=null}if(mode==='synth')playing=false;setBtns()}
+function startSynth(){ensureCtx();pauseTrack();sStart=ctx.currentTime+0.08;nextB=sStart;bN=0;curLead=null;timer=setInterval(sched,25);mode='synth';playing=true;setToggles(true);setBtns()}
+function playTrack(pos){ensureCtx();stopSynth();if(src){src.onended=null;try{src.stop()}catch(e){}}src=ctx.createBufferSource();src.buffer=buf;src.connect(ctx.destination);const s=src;src.onended=()=>{if(s===src&&mode==='track'&&playing){playing=false;tPos=0;setBtns()}};src.start(0,Math.max(0,pos));tStart=ctx.currentTime-Math.max(0,pos);mode='track';playing=true;setToggles(false);setBtns()}
+function pauseTrack(){if(mode==='track'&&playing){tPos=ctx.currentTime-tStart;playing=false;if(src){src.onended=null;try{src.stop()}catch(e){}}setBtns()}}
+function seekLoop(k){if(!buf){$('st').textContent='Load your copy of the track to jump around';return}const pos=Math.max(0,T0+k*LOOP-0.05);if(mode==='track'&&playing){playTrack(pos);return}if(mode==='synth'&&playing)stopSynth();tPos=pos;mode='track';playing=false;setToggles(false);setBtns();paint(pos)}
+function setToggles(on){['tSus','tGo','tMuf'].forEach(id=>$(id).disabled=!on);if(!on){sus=go=true;$('tSus').checked=$('tGo').checked=true;layout();$('tnote').textContent='Toggles change the synth loop only.'}else $('tnote').textContent=''}
+function setBtns(){const sp=mode==='synth'&&playing,tp=mode==='track'&&playing;$('bs').textContent=sp?'❚❚ Pause synth':'▶ Play synth loop';$('bt').textContent=tp?'❚❚ Pause your track':'▶ Play your track'}
+$('bs').onclick=()=>{if(mode==='synth'&&playing)stopSynth();else startSynth()};
+$('bt').onclick=()=>{if(!buf)return;if(mode==='track'&&playing)pauseTrack();else playTrack(tPos>=DUR-0.5?0:tPos)};
+$('tSus').onchange=e=>{sus=e.target.checked;layout()};$('tGo').onchange=e=>{go=e.target.checked;layout()};
+$('tMuf').onchange=e=>{muf=e.target.checked;if(ctx)lp.frequency.setTargetAtTime(muf?420:2400,ctx.currentTime,0.06);$('up').setAttribute('opacity',muf?0.4:1)};
+$('off').oninput=e=>{off=e.target.value/1000;$('offv').textContent=e.target.value+' ms'};
+async function useBytes(ab,saved){ensureCtx();$('st').textContent='Decoding…';try{buf=await ctx.decodeAudioData(ab);$('bt').disabled=false;tPos=0;const d=buf.duration;$('forget').hidden=!saved;$('st').textContent=(Math.abs(d-DUR)>3?`Loaded (${fmt(d)}). This isn’t the 6:14 instrumental, so the grid may not line up.`:`Loaded (${fmt(d)}). Click a bar to jump.`)+(saved?' Saved on this device.':'');return true}catch(err){$('st').textContent='Your browser couldn’t read that file. Try an mp3 or wav.';return false}}
+const DBN='luvsic-player',ST='files';
+function idb(){return new Promise((res,rej)=>{try{const r=indexedDB.open(DBN,1);r.onupgradeneeded=()=>r.result.createObjectStore(ST);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}})}
+async function idbDo(m,fn){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction(ST,m);const q=fn(tx.objectStore(ST));tx.oncomplete=()=>res(q&&q.result);tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error)})}
+$('fi').onchange=async e=>{const f=e.target.files[0];if(!f)return;const ab=await f.arrayBuffer();let saved=false;try{await idbDo('readwrite',s=>s.put({name:f.name,data:ab.slice(0)},'track'));saved=true}catch(err){}await useBytes(ab,saved)};
+$('forget').onclick=async()=>{try{await idbDo('readwrite',s=>s.delete('track'))}catch(err){}$('forget').hidden=true;$('st').textContent='Removed from this device. It stays loaded until you close the page.'};
+(async()=>{try{const rec=await idbDo('readonly',s=>s.get('track'));if(rec&&rec.data)await useBytes(rec.data,true)}catch(err){}})();
+
+/* animation */
+function hl(i){if(i===lastI)return;if(lastI>=0){cells[lastI].setAttribute('class','cell');nums[lastI].setAttribute('class','num')}if(i>=0){cells[i].setAttribute('class','cell now');nums[i].setAttribute('class','num cur')}lastI=i;
+  const aX=+$('amr').getAttribute('x');$('amr').setAttribute('class','box-home'+(i>=0&&130+32*i>=aX-1?' on':''));
+  const pEnd=+$('pur').getAttribute('x')+ +$('pur').getAttribute('width');$('pur').setAttribute('class','box-ten'+(i>=4&&130+32*i<pEnd?' on':''))}
+function place(bf){const i=Math.floor(bf)%16,fr=bf-Math.floor(bf),x=130+32*(i+fr);$('ph').setAttribute('x1',x);$('ph').setAttribute('x2',x);$('ph').setAttribute('opacity',1);hl(i)}
+function paint(t){const bf=(t-T0-off)/IBI;if(bf<0){$('ph').setAttribute('opacity',0);$('cap').textContent='The loop starts in a moment.';hl(-1);return}const k=Math.floor(bf/16),i=Math.floor(bf)%16;place(bf);const[sName,op]=stateOf(k);$('up').setAttribute('opacity',op);$('cap').textContent=caption(i)+' Piano: '+sName+'.';if(k!==lastL){bars.forEach((r,j)=>{r.style.fill=j===k?'var(--now)':'var(--bar)';r.style.opacity=j===k?1:.6});lastL=k}$('st').textContent=`${fmt(t)} · pass ${Math.min(k+1,37)} of 37`}
+function frame(){requestAnimationFrame(frame);if(!ctx||!playing)return;if(mode==='synth'){const bf=(aud()-sStart)/IBI;if(bf<0)return;place(bf);$('cap').textContent=caption(Math.floor(bf)%16)+(muf?' Filter on: the top end is muffled, like the half-muffled passes in the track.':'')}else paint(aud()-tStart)}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

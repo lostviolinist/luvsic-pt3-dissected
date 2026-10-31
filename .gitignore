@@ -1,0 +1,13 @@
+# Audio is not part of this repo. Use your own copy of the track.
+*.webm
+*.mp3
+*.m4a
+*.wav
+*.flac
+*.ogg
+*.aac
+audio/
+__pycache__/
+*.pyc
+.venv/
+.DS_Store
