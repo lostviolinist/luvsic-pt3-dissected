@@ -145,11 +145,11 @@ footer{font-family:var(--display);font-size:13px;color:var(--muted);border-top:1
     <button id="bs" type="button">▶ Play synth loop</button>
   </div>
   <audio id="track" data-src="audio/luvsic-pt3-instrumental.webm" preload="metadata"></audio>
-  <div class="ctl">
+  <div class="ctl" role="group" aria-label="Synth preview options">
     <label><input type="checkbox" id="tSus" checked> Sus4 chords</label>
     <label><input type="checkbox" id="tGo" checked> Gø7 walk-down</label>
     <label><input type="checkbox" id="tMuf"> Muffle filter</label>
-    <span id="tnote" style="font-size:13px"></span>
+    <span id="tnote" style="font-size:13px" role="status">These options change the synth preview.</span>
   </div>
   <p class="cap" id="cap" aria-live="polite">Play the instrumental to watch the diagram follow the recording. The synth lets you explore the chord changes with simple voicings.</p>
   <div class="strip-head"><span>Piano brightness, pass by pass (taller is clearer)</span><span id="st" role="status">Loading instrumental…</span></div>
@@ -302,16 +302,27 @@ function playBeat(i,t){const v=voice(i),pv=voice((i+15)%16);
   if(v.l!==pv.l||i===0){let k=1;while(k<16&&voice((i+k)%16).l===v.l)k++;if(curLead){curLead.gain.cancelScheduledValues(t);curLead.gain.setTargetAtTime(0.0001,t,0.03)}curLead=tone(v.l,t,k*IBI,0.15,true)}}
 function sched(){while(nextB<ctx.currentTime+0.12){playBeat(bN%16,nextB);nextB+=IBI;bN++}}
 function stopSynth(){if(timer){clearInterval(timer);timer=null}if(ctx)master.gain.setTargetAtTime(0,ctx.currentTime,0.015);if(curLead&&ctx){curLead.gain.cancelScheduledValues(ctx.currentTime);curLead.gain.setTargetAtTime(0.0001,ctx.currentTime,0.05);curLead=null}if(mode==='synth')playing=false;setBtns()}
-function startSynth(){ensureCtx();pauseTrack();master.gain.setTargetAtTime(0.55,ctx.currentTime,0.015);sStart=ctx.currentTime+0.08;nextB=sStart;bN=0;curLead=null;timer=setInterval(sched,25);mode='synth';playing=true;setToggles(true);setBtns()}
-function playTrack(pos){if(!trackLoaded)return;stopSynth();mode='track';setToggles(false);track.currentTime=Math.max(0,pos);track.play().catch(err=>{if(mode!=='track'||err.name==='AbortError')return;playing=false;setBtns();$('st').textContent='The instrumental couldn’t play. Press play to retry.'});setBtns()}
+function startSynth(){ensureCtx();pauseTrack();master.gain.setTargetAtTime(0.55,ctx.currentTime,0.015);sStart=ctx.currentTime+0.08;nextB=sStart;bN=0;curLead=null;timer=setInterval(sched,25);mode='synth';playing=true;showMode();setBtns()}
+function playTrack(pos){if(!trackLoaded)return;stopSynth();mode='track';showMode();track.currentTime=Math.max(0,pos);track.play().catch(err=>{if(mode!=='track'||err.name==='AbortError')return;playing=false;setBtns();$('st').textContent='The instrumental couldn’t play. Press play to retry.'});setBtns()}
 function pauseTrack(){if(mode==='track'){tPos=track.currentTime;track.pause();playing=false;setBtns()}}
-function seekLoop(k){const pos=Math.max(0,T0+k*LOOP-0.05);if(mode==='synth'&&playing)stopSynth();tPos=pos;mode='track';setToggles(false);if(trackLoaded){track.currentTime=pos;paint(pos)}setBtns()}
-function setToggles(on){['tSus','tGo','tMuf'].forEach(id=>$(id).disabled=!on);if(!on){sus=go=true;$('tSus').checked=$('tGo').checked=true;layout();$('tnote').textContent='Toggles change the synth loop only.'}else $('tnote').textContent=''}
+function seekLoop(k){const pos=Math.max(0,T0+k*LOOP-0.05);if(mode==='synth'&&playing)stopSynth();tPos=pos;mode='track';showMode();if(trackLoaded){track.currentTime=pos;paint(pos)}setBtns()}
+function showMode(){
+  const synth=mode==='synth';sus=synth?$('tSus').checked:true;go=synth?$('tGo').checked:true;muf=$('tMuf').checked;layout();
+  if(synth){if(ctx)lp.frequency.setTargetAtTime(muf?420:2400,ctx.currentTime,0.06);$('up').setAttribute('opacity',muf?0.4:1)}
+  $('tnote').textContent=synth?'These options change the synth preview.':'Recording mode. Change an option to switch to the synth preview.';
+}
+function changeSynthOption(){
+  const fromTrack=mode==='track',resume=fromTrack&&playing;
+  if(fromTrack)pauseTrack();mode='synth';showMode();
+  if(resume)startSynth();
+  if(!playing){$('ph').setAttribute('opacity',0);hl(-1);$('cap').textContent='Press Play synth loop to hear your changes.'}
+  if(fromTrack)$('tnote').textContent=resume?'Switched to the synth preview.':'Switched to the synth preview. Press Play synth loop to listen.';
+  setBtns();
+}
 function setBtns(){const sp=mode==='synth'&&playing,tp=mode==='track'&&!track.paused&&!track.ended;$('bs').textContent=sp?'❚❚ Pause synth':'▶ Play synth loop';$('bt').disabled=trackLoading;$('bt').textContent=trackLoading?'Loading instrumental…':!trackLoaded?'↻ Retry instrumental':tp?'❚❚ Pause instrumental':'▶ Play instrumental'}
 $('bs').onclick=()=>{if(mode==='synth'&&playing)stopSynth();else startSynth()};
 $('bt').onclick=()=>{if(!trackLoaded){loadInstrumental();return}if(mode==='track'&&!track.paused)pauseTrack();else playTrack(track.ended?0:tPos)};
-$('tSus').onchange=e=>{sus=e.target.checked;layout()};$('tGo').onchange=e=>{go=e.target.checked;layout()};
-$('tMuf').onchange=e=>{muf=e.target.checked;if(ctx)lp.frequency.setTargetAtTime(muf?420:2400,ctx.currentTime,0.06);$('up').setAttribute('opacity',muf?0.4:1)};
+['tSus','tGo','tMuf'].forEach(id=>$(id).onchange=changeSynthOption);
 $('off').oninput=e=>{off=e.target.value/1000;$('offv').textContent=e.target.value+' ms'};
 /* A local blob lets native audio seek even on static hosts without byte-range support. */
 async function loadInstrumental(){if(trackLoading)return;trackLoading=true;trackLoaded=false;setBtns();$('st').textContent='Loading instrumental…';try{const response=await fetch(track.dataset.src);if(!response.ok)throw new Error('Audio request failed');const blob=await response.blob();if(trackURL)URL.revokeObjectURL(trackURL);trackURL=URL.createObjectURL(blob);track.src=trackURL}catch(err){trackLoading=false;setBtns();$('st').textContent='The instrumental couldn’t load. Press retry to try again.'}}
