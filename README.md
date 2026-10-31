@@ -2,9 +2,23 @@
 
 An interactive, beat-by-beat look at the piano loop in Nujabes' "Luv(sic) Part 3" (instrumental) and why it sounds nostalgic.
 
-Open `index.html` in a browser, or serve this directory with any static web server. There is no build step. Keep the `audio/` directory alongside `index.html` when publishing.
+Serve this directory with any static web server (for example, `python3 -m http.server`). Keep the `audio/` directory alongside `index.html` when publishing. No application build is required.
 
-For timeline seeking over HTTP, use a host that supports byte-range requests for media files.
+The player downloads the bundled audio into a local browser blob before enabling playback. This keeps timeline seeking reliable on static hosts, including Cloudflare Pages, without requiring byte-range responses or server functions.
+
+## Hosting and automatic deployments
+
+The site is hosted on Cloudflare Pages at [luvsic-pt3.pages.dev](https://luvsic-pt3.pages.dev/).
+The `luvsic-pt3` Pages project is connected to this GitHub repository. Every push or merged pull request to `main` automatically builds and deploys the live site.
+
+Cloudflare build settings:
+
+- Framework preset: **None**
+- Build command: `mkdir -p dist/audio && cp index.html dist/ && cp audio/luvsic-pt3-instrumental.webm dist/audio/`
+- Build output directory: `dist`
+- Build environment variable: `SKIP_DEPENDENCY_INSTALL=true` (the Python packages are only needed for the optional analysis script).
+
+Only the page and its bundled audio are published. The deployment uses static hosting without Pages Functions.
 
 ## What's on the page
 
@@ -49,7 +63,7 @@ Chord and pitch readings from mixed audio are estimates. They match published tr
 
 ## Bundled audio
 
-The supplied instrumental is included at `audio/luvsic-pt3-instrumental.webm`. The page loads its metadata and starts playback when a visitor presses play. Use a browser that supports WebM audio, such as Chrome. The recording belongs to its rights holders. The [official upload is also on YouTube](https://www.youtube.com/watch?v=NhG4cQATy6c).
+The supplied instrumental is included at `audio/luvsic-pt3-instrumental.webm`. The page loads the recording, then starts playback when a visitor presses play. Use a browser that supports WebM audio, such as Chrome. The recording belongs to its rights holders. The [official upload is also on YouTube](https://www.youtube.com/watch?v=NhG4cQATy6c).
 
 Other audio exports remain ignored by Git; `.gitignore` explicitly includes this bundled file.
 

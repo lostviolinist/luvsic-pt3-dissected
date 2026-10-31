@@ -141,10 +141,10 @@ footer{font-family:var(--display);font-size:13px;color:var(--muted);border-top:1
   </svg>
   </div>
   <div class="ctl">
-    <button class="primary" id="bt" type="button">▶ Play instrumental</button>
+    <button class="primary" id="bt" type="button" disabled>Loading instrumental…</button>
     <button id="bs" type="button">▶ Play synth loop</button>
   </div>
-  <audio id="track" src="audio/luvsic-pt3-instrumental.webm" preload="metadata"></audio>
+  <audio id="track" data-src="audio/luvsic-pt3-instrumental.webm" preload="metadata"></audio>
   <div class="ctl">
     <label><input type="checkbox" id="tSus" checked> Sus4 chords</label>
     <label><input type="checkbox" id="tGo" checked> Gø7 walk-down</label>
@@ -152,7 +152,7 @@ footer{font-family:var(--display);font-size:13px;color:var(--muted);border-top:1
     <span id="tnote" style="font-size:13px"></span>
   </div>
   <p class="cap" id="cap" aria-live="polite">Play the instrumental to watch the diagram follow the recording. The synth lets you explore the chord changes with simple voicings.</p>
-  <div class="strip-head"><span>Piano brightness, pass by pass (taller is clearer)</span><span id="st" role="status">Ready to play · 6:14</span></div>
+  <div class="strip-head"><span>Piano brightness, pass by pass (taller is clearer)</span><span id="st" role="status">Loading instrumental…</span></div>
   <svg id="tl" viewBox="0 0 680 64" role="img" aria-label="Piano brightness for each of 37 passes. Click a bar to jump to that pass in the instrumental."></svg>
   <div class="ctl off"><label for="off">Sync offset</label><input type="range" id="off" min="-250" max="250" step="10" value="0"><span id="offv" style="min-width:52px;text-align:right" class="mono">0 ms</span></div>
   <p class="listen">The instrumental is ready to play here. Click a brightness bar to jump to that pass. You can also hear the <a href="https://www.youtube.com/watch?v=NhG4cQATy6c" target="_blank" rel="noopener">official upload on YouTube</a>.</p>
@@ -244,6 +244,7 @@ const LD=[[-26.4,1.1,-0.3],[-17.7,1.7,1],[-17.8,1.6,1],[0,0,0],[0.1,-0.4,-0.2],[
 const $=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg';
 let sus=true,go=true,muf=false,mode=null,playing=false,ctx=null,lp=null,master=null;
 const track=$('track');
+let trackLoading=false,trackLoaded=false,trackURL=null;
 let tPos=0,sStart=0,nextB=0,bN=0,timer=null,curLead=null,off=0,lastI=-1,lastL=-1;
 function el(tag,attrs,txt){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(txt!=null)e.textContent=txt;return e}
 const fmt=t=>Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0');
@@ -302,22 +303,25 @@ function playBeat(i,t){const v=voice(i),pv=voice((i+15)%16);
 function sched(){while(nextB<ctx.currentTime+0.12){playBeat(bN%16,nextB);nextB+=IBI;bN++}}
 function stopSynth(){if(timer){clearInterval(timer);timer=null}if(ctx)master.gain.setTargetAtTime(0,ctx.currentTime,0.015);if(curLead&&ctx){curLead.gain.cancelScheduledValues(ctx.currentTime);curLead.gain.setTargetAtTime(0.0001,ctx.currentTime,0.05);curLead=null}if(mode==='synth')playing=false;setBtns()}
 function startSynth(){ensureCtx();pauseTrack();master.gain.setTargetAtTime(0.55,ctx.currentTime,0.015);sStart=ctx.currentTime+0.08;nextB=sStart;bN=0;curLead=null;timer=setInterval(sched,25);mode='synth';playing=true;setToggles(true);setBtns()}
-function playTrack(pos){stopSynth();mode='track';setToggles(false);if(track.error)track.load();track.currentTime=Math.max(0,pos);track.play().catch(err=>{if(mode!=='track'||err.name==='AbortError')return;playing=false;setBtns();$('st').textContent='The instrumental couldn’t play. Press play to retry.'});setBtns()}
+function playTrack(pos){if(!trackLoaded)return;stopSynth();mode='track';setToggles(false);track.currentTime=Math.max(0,pos);track.play().catch(err=>{if(mode!=='track'||err.name==='AbortError')return;playing=false;setBtns();$('st').textContent='The instrumental couldn’t play. Press play to retry.'});setBtns()}
 function pauseTrack(){if(mode==='track'){tPos=track.currentTime;track.pause();playing=false;setBtns()}}
-function seekLoop(k){const pos=Math.max(0,T0+k*LOOP-0.05);if(mode==='synth'&&playing)stopSynth();tPos=pos;mode='track';track.currentTime=pos;setToggles(false);setBtns();paint(pos)}
+function seekLoop(k){const pos=Math.max(0,T0+k*LOOP-0.05);if(mode==='synth'&&playing)stopSynth();tPos=pos;mode='track';setToggles(false);if(trackLoaded){track.currentTime=pos;paint(pos)}setBtns()}
 function setToggles(on){['tSus','tGo','tMuf'].forEach(id=>$(id).disabled=!on);if(!on){sus=go=true;$('tSus').checked=$('tGo').checked=true;layout();$('tnote').textContent='Toggles change the synth loop only.'}else $('tnote').textContent=''}
-function setBtns(){const sp=mode==='synth'&&playing,tp=mode==='track'&&!track.paused&&!track.ended;$('bs').textContent=sp?'❚❚ Pause synth':'▶ Play synth loop';$('bt').textContent=tp?'❚❚ Pause instrumental':'▶ Play instrumental'}
+function setBtns(){const sp=mode==='synth'&&playing,tp=mode==='track'&&!track.paused&&!track.ended;$('bs').textContent=sp?'❚❚ Pause synth':'▶ Play synth loop';$('bt').disabled=trackLoading;$('bt').textContent=trackLoading?'Loading instrumental…':!trackLoaded?'↻ Retry instrumental':tp?'❚❚ Pause instrumental':'▶ Play instrumental'}
 $('bs').onclick=()=>{if(mode==='synth'&&playing)stopSynth();else startSynth()};
-$('bt').onclick=()=>{if(mode==='track'&&!track.paused)pauseTrack();else playTrack(track.ended?0:tPos)};
+$('bt').onclick=()=>{if(!trackLoaded){loadInstrumental();return}if(mode==='track'&&!track.paused)pauseTrack();else playTrack(track.ended?0:tPos)};
 $('tSus').onchange=e=>{sus=e.target.checked;layout()};$('tGo').onchange=e=>{go=e.target.checked;layout()};
 $('tMuf').onchange=e=>{muf=e.target.checked;if(ctx)lp.frequency.setTargetAtTime(muf?420:2400,ctx.currentTime,0.06);$('up').setAttribute('opacity',muf?0.4:1)};
 $('off').oninput=e=>{off=e.target.value/1000;$('offv').textContent=e.target.value+' ms'};
-track.addEventListener('loadedmetadata',()=>{if(!playing)$('st').textContent=`Ready (${fmt(Number.isFinite(track.duration)?track.duration:DUR)}). Click a bar to jump.`});
+/* A local blob lets native audio seek even on static hosts without byte-range support. */
+async function loadInstrumental(){if(trackLoading)return;trackLoading=true;trackLoaded=false;setBtns();$('st').textContent='Loading instrumental…';try{const response=await fetch(track.dataset.src);if(!response.ok)throw new Error('Audio request failed');const blob=await response.blob();if(trackURL)URL.revokeObjectURL(trackURL);trackURL=URL.createObjectURL(blob);track.src=trackURL}catch(err){trackLoading=false;setBtns();$('st').textContent='The instrumental couldn’t load. Press retry to try again.'}}
+track.addEventListener('loadedmetadata',()=>{trackLoading=false;trackLoaded=true;setBtns();if(tPos>0)track.currentTime=tPos;else $('st').textContent=`Ready (${fmt(Number.isFinite(track.duration)?track.duration:DUR)}). Click a bar to jump.`});
 track.addEventListener('play',()=>{if(mode==='track'){playing=true;setBtns()}});
 track.addEventListener('pause',()=>{if(mode==='track'){playing=false;tPos=track.currentTime;setBtns()}});
 track.addEventListener('seeked',()=>{if(mode==='track'){tPos=track.currentTime;paint(tPos)}});
 track.addEventListener('ended',()=>{if(mode==='track'){playing=false;tPos=0;setBtns();$('st').textContent='Finished · Play instrumental to listen again.'}});
-track.addEventListener('error',()=>{if(mode==='track')playing=false;setBtns();$('st').textContent='The instrumental couldn’t load. Press play to retry.'});
+track.addEventListener('error',()=>{if(mode==='track')playing=false;trackLoading=false;trackLoaded=false;setBtns();$('st').textContent='The instrumental couldn’t load. Press retry to try again.'});
+loadInstrumental();
 
 /* animation */
 function hl(i){if(i===lastI)return;if(lastI>=0){cells[lastI].setAttribute('class','cell');nums[lastI].setAttribute('class','num')}if(i>=0){cells[i].setAttribute('class','cell now');nums[i].setAttribute('class','num cur')}lastI=i;
