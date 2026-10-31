@@ -67,13 +67,11 @@ a{color:var(--tension);text-underline-offset:3px}
 .ctl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;font-family:var(--display);font-size:15px;color:var(--muted)}
 .ctl label{display:flex;align-items:center;gap:7px;cursor:pointer}
 .ctl input[type=checkbox]{accent-color:var(--tension);width:16px;height:16px}
-button,.fbtn{font-family:var(--display);font-size:15px;font-weight:500;color:var(--fg);background:transparent;border:1px solid var(--line);border-radius:10px;padding:8px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;line-height:1.2}
+button{font-family:var(--display);font-size:15px;font-weight:500;color:var(--fg);background:transparent;border:1px solid var(--line);border-radius:10px;padding:8px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;line-height:1.2}
 button.primary{background:var(--fg);color:var(--bg);border-color:var(--fg)}
 button:disabled{opacity:.45;cursor:not-allowed}
-button:hover:not(:disabled),.fbtn:hover{border-color:var(--muted)}
-button:focus-visible,.fbtn:focus-within,input:focus-visible{outline:2px solid var(--tension);outline-offset:2px}
-.fbtn input{position:absolute;width:1px;height:1px;opacity:0}
-.fbtn{position:relative}
+button:hover:not(:disabled){border-color:var(--muted)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--tension);outline-offset:2px}
 [hidden]{display:none!important}
 .cap{font-family:var(--display);font-size:16px;line-height:1.5;margin:0;min-height:48px;color:var(--fg)}
 .strip-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;font-family:var(--display);font-size:13px;color:var(--muted)}
@@ -113,7 +111,7 @@ footer{font-family:var(--display);font-size:13px;color:var(--muted);border-top:1
 <div class="panel" aria-label="Loop player">
   <div class="panel-head">
     <h2>The loop, beat by beat</h2>
-    <p class="hint">Press play, then switch chords off to hear what each one adds.</p>
+    <p class="hint">Follow the recording, or try the synth to hear what each chord adds.</p>
   </div>
   <div class="scroll">
   <svg class="dia" id="dia" viewBox="0 0 680 172" role="img" aria-labelledby="diaT diaD"><title id="diaT">The 16-beat loop</title><desc id="diaD">Chords Fm9, B-flat minor 9, E-flat 7 sus4, A-flat major 7 sus4 and G half-diminished 7. A D-flat is held on top from beat 5 to beat 14 and resolves to C on beat 15. The bass falls F, B-flat, E-flat, A-flat, then steps to G.</desc>
@@ -143,22 +141,21 @@ footer{font-family:var(--display);font-size:13px;color:var(--muted);border-top:1
   </svg>
   </div>
   <div class="ctl">
-    <button class="primary" id="bs" type="button">▶ Play synth loop</button>
-    <label class="fbtn" for="fi">Load your copy of the track<input type="file" id="fi" accept="audio/*,.webm,.mp3,.m4a,.wav,.ogg"></label>
-    <button id="bt" type="button" disabled>▶ Play your track</button>
-    <button id="forget" type="button" hidden>Remove saved file</button>
+    <button class="primary" id="bt" type="button">▶ Play instrumental</button>
+    <button id="bs" type="button">▶ Play synth loop</button>
   </div>
+  <audio id="track" src="audio/luvsic-pt3-instrumental.webm" preload="metadata"></audio>
   <div class="ctl">
     <label><input type="checkbox" id="tSus" checked> Sus4 chords</label>
     <label><input type="checkbox" id="tGo" checked> Gø7 walk-down</label>
     <label><input type="checkbox" id="tMuf"> Muffle filter</label>
     <span id="tnote" style="font-size:13px"></span>
   </div>
-  <p class="cap" id="cap" aria-live="polite">The synth plays the chord changes with simple voicings. Load the original to watch the diagram follow the recording.</p>
-  <div class="strip-head"><span>Piano brightness, pass by pass (taller is clearer)</span><span id="st">Track not loaded</span></div>
-  <svg id="tl" viewBox="0 0 680 64" role="img" aria-label="Piano brightness for each of 37 passes. Click a bar to jump there once your track is loaded."></svg>
+  <p class="cap" id="cap" aria-live="polite">Play the instrumental to watch the diagram follow the recording. The synth lets you explore the chord changes with simple voicings.</p>
+  <div class="strip-head"><span>Piano brightness, pass by pass (taller is clearer)</span><span id="st" role="status">Ready to play · 6:14</span></div>
+  <svg id="tl" viewBox="0 0 680 64" role="img" aria-label="Piano brightness for each of 37 passes. Click a bar to jump to that pass in the instrumental."></svg>
   <div class="ctl off"><label for="off">Sync offset</label><input type="range" id="off" min="-250" max="250" step="10" value="0"><span id="offv" style="min-width:52px;text-align:right" class="mono">0 ms</span></div>
-  <p class="listen">Hear the original: <a href="https://www.youtube.com/watch?v=NhG4cQATy6c" target="_blank" rel="noopener">Luv(sic) Pt. 3 instrumental on YouTube</a>. If you own the track, load it above and the diagram follows the recording. The file stays in your browser, and each device remembers it after the first load.</p>
+  <p class="listen">The instrumental is ready to play here. Click a brightness bar to jump to that pass. You can also hear the <a href="https://www.youtube.com/watch?v=NhG4cQATy6c" target="_blank" rel="noopener">official upload on YouTube</a>.</p>
 </div>
 
 <section>
@@ -238,7 +235,7 @@ footer{font-family:var(--display);font-size:13px;color:var(--muted);border-top:1
   </ol>
 </section>
 
-<footer>An independent listening analysis made with Claude. Not affiliated with Nujabes, Shing02 or Hydeout Productions. No audio is hosted on this page.</footer>
+<footer>An independent listening analysis made with Claude. Not affiliated with Nujabes, Shing02 or Hydeout Productions. The recording belongs to its respective rights holders.</footer>
 </div>
 
 <script>
@@ -246,7 +243,8 @@ const T0=0.1461,IBI=0.6315801,LOOP=16*IBI,DUR=374.2;
 const LD=[[-26.4,1.1,-0.3],[-17.7,1.7,1],[-17.8,1.6,1],[0,0,0],[0.1,-0.4,-0.2],[-17.8,1.7,1],[-17.7,1.7,1],[-17.6,1.7,1],[-17.7,1.7,1],[0,-0.4,-0.1],[0,-0.8,-0.2],[0.2,-0.5,-0.2],[0.1,-0.2,-0.1],[0,-0.1,0],[-18,1.7,1],[-18,1.6,0.9],[-26.7,1.1,-0.2],[-18,1.8,1],[0,0,0],[0,0,0],[0.1,0,-0.1],[-26.6,1.2,-0.2],[-26.7,1.3,-0.1],[-17.8,1.7,1],[-17.9,1.6,0.9],[-17.8,1.7,1],[0,-0.1,0],[0.3,-4.7,-0.9],[0.3,-4.8,-1],[0.4,-4.6,-0.9],[0.3,-4.6,-0.9],[0,-0.2,0],[0,0,0],[0,0,0],[-2.6,-3.2,-2.6],[-12,-12.9,-11.8],[-30.4,-30.6,-29.2]];
 const $=id=>document.getElementById(id),NS='http://www.w3.org/2000/svg';
 let sus=true,go=true,muf=false,mode=null,playing=false,ctx=null,lp=null,master=null;
-let buf=null,src=null,tStart=0,tPos=0,sStart=0,nextB=0,bN=0,timer=null,curLead=null,off=0,lastI=-1,lastL=-1;
+const track=$('track');
+let tPos=0,sStart=0,nextB=0,bN=0,timer=null,curLead=null,off=0,lastI=-1,lastL=-1;
 function el(tag,attrs,txt){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(txt!=null)e.textContent=txt;return e}
 const fmt=t=>Math.floor(t/60)+':'+String(Math.floor(t%60)).padStart(2,'0');
 
@@ -302,25 +300,24 @@ function playBeat(i,t){const v=voice(i),pv=voice((i+15)%16);
   if(v.s){tone(v.b,t,2.6,0.3);v.p.forEach(m=>tone(m,t,2.2,0.08))}else v.p.forEach(m=>tone(m,t,0.6,0.035));
   if(v.l!==pv.l||i===0){let k=1;while(k<16&&voice((i+k)%16).l===v.l)k++;if(curLead){curLead.gain.cancelScheduledValues(t);curLead.gain.setTargetAtTime(0.0001,t,0.03)}curLead=tone(v.l,t,k*IBI,0.15,true)}}
 function sched(){while(nextB<ctx.currentTime+0.12){playBeat(bN%16,nextB);nextB+=IBI;bN++}}
-function stopSynth(){if(timer){clearInterval(timer);timer=null}if(curLead&&ctx){curLead.gain.cancelScheduledValues(ctx.currentTime);curLead.gain.setTargetAtTime(0.0001,ctx.currentTime,0.05);curLead=null}if(mode==='synth')playing=false;setBtns()}
-function startSynth(){ensureCtx();pauseTrack();sStart=ctx.currentTime+0.08;nextB=sStart;bN=0;curLead=null;timer=setInterval(sched,25);mode='synth';playing=true;setToggles(true);setBtns()}
-function playTrack(pos){ensureCtx();stopSynth();if(src){src.onended=null;try{src.stop()}catch(e){}}src=ctx.createBufferSource();src.buffer=buf;src.connect(ctx.destination);const s=src;src.onended=()=>{if(s===src&&mode==='track'&&playing){playing=false;tPos=0;setBtns()}};src.start(0,Math.max(0,pos));tStart=ctx.currentTime-Math.max(0,pos);mode='track';playing=true;setToggles(false);setBtns()}
-function pauseTrack(){if(mode==='track'&&playing){tPos=ctx.currentTime-tStart;playing=false;if(src){src.onended=null;try{src.stop()}catch(e){}}setBtns()}}
-function seekLoop(k){if(!buf){$('st').textContent='Load your copy of the track to jump around';return}const pos=Math.max(0,T0+k*LOOP-0.05);if(mode==='track'&&playing){playTrack(pos);return}if(mode==='synth'&&playing)stopSynth();tPos=pos;mode='track';playing=false;setToggles(false);setBtns();paint(pos)}
+function stopSynth(){if(timer){clearInterval(timer);timer=null}if(ctx)master.gain.setTargetAtTime(0,ctx.currentTime,0.015);if(curLead&&ctx){curLead.gain.cancelScheduledValues(ctx.currentTime);curLead.gain.setTargetAtTime(0.0001,ctx.currentTime,0.05);curLead=null}if(mode==='synth')playing=false;setBtns()}
+function startSynth(){ensureCtx();pauseTrack();master.gain.setTargetAtTime(0.55,ctx.currentTime,0.015);sStart=ctx.currentTime+0.08;nextB=sStart;bN=0;curLead=null;timer=setInterval(sched,25);mode='synth';playing=true;setToggles(true);setBtns()}
+function playTrack(pos){stopSynth();mode='track';setToggles(false);if(track.error)track.load();track.currentTime=Math.max(0,pos);track.play().catch(err=>{if(mode!=='track'||err.name==='AbortError')return;playing=false;setBtns();$('st').textContent='The instrumental couldn’t play. Press play to retry.'});setBtns()}
+function pauseTrack(){if(mode==='track'){tPos=track.currentTime;track.pause();playing=false;setBtns()}}
+function seekLoop(k){const pos=Math.max(0,T0+k*LOOP-0.05);if(mode==='synth'&&playing)stopSynth();tPos=pos;mode='track';track.currentTime=pos;setToggles(false);setBtns();paint(pos)}
 function setToggles(on){['tSus','tGo','tMuf'].forEach(id=>$(id).disabled=!on);if(!on){sus=go=true;$('tSus').checked=$('tGo').checked=true;layout();$('tnote').textContent='Toggles change the synth loop only.'}else $('tnote').textContent=''}
-function setBtns(){const sp=mode==='synth'&&playing,tp=mode==='track'&&playing;$('bs').textContent=sp?'❚❚ Pause synth':'▶ Play synth loop';$('bt').textContent=tp?'❚❚ Pause your track':'▶ Play your track'}
+function setBtns(){const sp=mode==='synth'&&playing,tp=mode==='track'&&!track.paused&&!track.ended;$('bs').textContent=sp?'❚❚ Pause synth':'▶ Play synth loop';$('bt').textContent=tp?'❚❚ Pause instrumental':'▶ Play instrumental'}
 $('bs').onclick=()=>{if(mode==='synth'&&playing)stopSynth();else startSynth()};
-$('bt').onclick=()=>{if(!buf)return;if(mode==='track'&&playing)pauseTrack();else playTrack(tPos>=DUR-0.5?0:tPos)};
+$('bt').onclick=()=>{if(mode==='track'&&!track.paused)pauseTrack();else playTrack(track.ended?0:tPos)};
 $('tSus').onchange=e=>{sus=e.target.checked;layout()};$('tGo').onchange=e=>{go=e.target.checked;layout()};
 $('tMuf').onchange=e=>{muf=e.target.checked;if(ctx)lp.frequency.setTargetAtTime(muf?420:2400,ctx.currentTime,0.06);$('up').setAttribute('opacity',muf?0.4:1)};
 $('off').oninput=e=>{off=e.target.value/1000;$('offv').textContent=e.target.value+' ms'};
-async function useBytes(ab,saved){ensureCtx();$('st').textContent='Decoding…';try{buf=await ctx.decodeAudioData(ab);$('bt').disabled=false;tPos=0;const d=buf.duration;$('forget').hidden=!saved;$('st').textContent=(Math.abs(d-DUR)>3?`Loaded (${fmt(d)}). This isn’t the 6:14 instrumental, so the grid may not line up.`:`Loaded (${fmt(d)}). Click a bar to jump.`)+(saved?' Saved on this device.':'');return true}catch(err){$('st').textContent='Your browser couldn’t read that file. Try an mp3 or wav.';return false}}
-const DBN='luvsic-player',ST='files';
-function idb(){return new Promise((res,rej)=>{try{const r=indexedDB.open(DBN,1);r.onupgradeneeded=()=>r.result.createObjectStore(ST);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}})}
-async function idbDo(m,fn){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction(ST,m);const q=fn(tx.objectStore(ST));tx.oncomplete=()=>res(q&&q.result);tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error)})}
-$('fi').onchange=async e=>{const f=e.target.files[0];if(!f)return;const ab=await f.arrayBuffer();let saved=false;try{await idbDo('readwrite',s=>s.put({name:f.name,data:ab.slice(0)},'track'));saved=true}catch(err){}await useBytes(ab,saved)};
-$('forget').onclick=async()=>{try{await idbDo('readwrite',s=>s.delete('track'))}catch(err){}$('forget').hidden=true;$('st').textContent='Removed from this device. It stays loaded until you close the page.'};
-(async()=>{try{const rec=await idbDo('readonly',s=>s.get('track'));if(rec&&rec.data)await useBytes(rec.data,true)}catch(err){}})();
+track.addEventListener('loadedmetadata',()=>{if(!playing)$('st').textContent=`Ready (${fmt(Number.isFinite(track.duration)?track.duration:DUR)}). Click a bar to jump.`});
+track.addEventListener('play',()=>{if(mode==='track'){playing=true;setBtns()}});
+track.addEventListener('pause',()=>{if(mode==='track'){playing=false;tPos=track.currentTime;setBtns()}});
+track.addEventListener('seeked',()=>{if(mode==='track'){tPos=track.currentTime;paint(tPos)}});
+track.addEventListener('ended',()=>{if(mode==='track'){playing=false;tPos=0;setBtns();$('st').textContent='Finished · Play instrumental to listen again.'}});
+track.addEventListener('error',()=>{if(mode==='track')playing=false;setBtns();$('st').textContent='The instrumental couldn’t load. Press play to retry.'});
 
 /* animation */
 function hl(i){if(i===lastI)return;if(lastI>=0){cells[lastI].setAttribute('class','cell');nums[lastI].setAttribute('class','num')}if(i>=0){cells[i].setAttribute('class','cell now');nums[i].setAttribute('class','num cur')}lastI=i;
@@ -328,7 +325,7 @@ function hl(i){if(i===lastI)return;if(lastI>=0){cells[lastI].setAttribute('class
   const pEnd=+$('pur').getAttribute('x')+ +$('pur').getAttribute('width');$('pur').setAttribute('class','box-ten'+(i>=4&&130+32*i<pEnd?' on':''))}
 function place(bf){const i=Math.floor(bf)%16,fr=bf-Math.floor(bf),x=130+32*(i+fr);$('ph').setAttribute('x1',x);$('ph').setAttribute('x2',x);$('ph').setAttribute('opacity',1);hl(i)}
 function paint(t){const bf=(t-T0-off)/IBI;if(bf<0){$('ph').setAttribute('opacity',0);$('cap').textContent='The loop starts in a moment.';hl(-1);return}const k=Math.floor(bf/16),i=Math.floor(bf)%16;place(bf);const[sName,op]=stateOf(k);$('up').setAttribute('opacity',op);$('cap').textContent=caption(i)+' Piano: '+sName+'.';if(k!==lastL){bars.forEach((r,j)=>{r.style.fill=j===k?'var(--now)':'var(--bar)';r.style.opacity=j===k?1:.6});lastL=k}$('st').textContent=`${fmt(t)} · pass ${Math.min(k+1,37)} of 37`}
-function frame(){requestAnimationFrame(frame);if(!ctx||!playing)return;if(mode==='synth'){const bf=(aud()-sStart)/IBI;if(bf<0)return;place(bf);$('cap').textContent=caption(Math.floor(bf)%16)+(muf?' Filter on: the top end is muffled, like the half-muffled passes in the track.':'')}else paint(aud()-tStart)}
+function frame(){requestAnimationFrame(frame);if(!playing)return;if(mode==='synth'){const bf=(aud()-sStart)/IBI;if(bf<0)return;place(bf);$('cap').textContent=caption(Math.floor(bf)%16)+(muf?' Filter on: the top end is muffled, like the half-muffled passes in the track.':'')}else paint(track.currentTime)}
 requestAnimationFrame(frame);
 </script>
 </body>

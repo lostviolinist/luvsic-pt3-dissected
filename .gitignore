@@ -1,4 +1,4 @@
-# Audio is not part of this repo. Use your own copy of the track.
+# Keep other audio exports out; include the bundled instrumental.
 *.webm
 *.mp3
 *.m4a
@@ -6,7 +6,8 @@
 *.flac
 *.ogg
 *.aac
-audio/
+audio/*
+!audio/luvsic-pt3-instrumental.webm
 __pycache__/
 *.pyc
 .venv/
